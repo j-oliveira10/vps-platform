@@ -1,0 +1,28 @@
+groups:
+  - name: host
+    rules:
+      - alert: DiskAlmostFull
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disco em {{ $labels.instance }} abaixo de 15% livre"
+
+      - alert: HighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memoria acima de 90% em {{ $labels.instance }}"
+
+  - name: containers
+    rules:
+      - alert: ContainerDown
+        expr: absent(container_last_seen{name="api"})
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container api ausente ha 2 minutos"

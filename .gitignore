@@ -1,0 +1,32 @@
+# Segredos — NUNCA commitar
+.env
+*.env
+!.env.example
+group_vars/all/vault.yml
+.vault_pass
+*.pem
+*.key
+!roles/*/templates/*.key.j2
+
+# ACME / TLS
+letsencrypt/
+acme.json
+
+# WireGuard
+wg-confs/
+*.conf
+!roles/*/templates/*.conf.j2
+
+# Restic
+restic-password
+.restic-cache/
+
+# Ansible
+*.retry
+.ansible/
+
+# SO / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,36 @@
+---
+# Variáveis não sensíveis. Segredos ficam em vault.yml (ansible-vault).
+domain: jairooferreira.online
+lab_domain: "lab.{{ domain }}"
+acme_email: "voce@{{ domain }}"
+
+# Fase de emissão de certificado: staging até validar, depois production
+acme_ca: staging   # staging | production
+
+ssh_port: 2222
+admin_user: jairo
+
+# Docker — pools definidos ANTES do primeiro container (evita colisão com LANs 172.x)
+docker_address_pool_base: "10.201.0.0/16"
+docker_address_pool_size: 24
+
+# WireGuard
+wg_interface: wg0
+wg_port: 51820
+wg_server_address: "10.100.0.1/24"
+wg_network: "10.100.0.0/24"
+
+# Serviços privados (só alcançáveis via wg0)
+private_services:
+  - { name: traefik,    host: "traefik.{{ lab_domain }}",    port: 8080 }
+  - { name: grafana,    host: "grafana.{{ lab_domain }}",    port: 3000 }
+  - { name: prometheus, host: "prometheus.{{ lab_domain }}", port: 9090 }
+
+# App pública
+app_host: "app.{{ domain }}"
+
+# Backup
+restic_repo: "b2:vps-platform-backup:/"
+restic_keep_daily: 7
+restic_keep_weekly: 4
+restic_keep_monthly: 6

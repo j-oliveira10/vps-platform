@@ -1,0 +1,19 @@
+---
+- name: vps-platform — provisionamento completo
+  hosts: vps
+  become: true
+  roles:
+    - role: common
+      tags: [common, base]
+    - role: docker
+      tags: [docker, base]
+    - role: wireguard
+      tags: [wireguard, network]
+    - role: traefik
+      tags: [traefik, proxy]
+    - role: app
+      tags: [app]
+    - role: observability
+      tags: [observability, monitoring]
+    - role: backup
+      tags: [backup]

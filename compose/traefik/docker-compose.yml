@@ -1,0 +1,46 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    networks: [proxy]
+    ports:
+      - "80:80"
+      - "443:443"
+      # dashboard NAO exposto publicamente — via router interno na wg0
+    environment:
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN:?token obrigatorio}
+    command:
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=proxy
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.cf.acme.dnschallenge=true
+      - --certificatesresolvers.cf.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.cf.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
+      - --certificatesresolvers.cf.acme.email=${ACME_EMAIL:?email obrigatorio}
+      - --certificatesresolvers.cf.acme.storage=/letsencrypt/acme.json
+      # REMOVER a linha abaixo (e apagar acme.json) ao migrar para producao
+      - --certificatesresolvers.cf.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --accesslog=true
+      - --accesslog.format=json
+      - --log.level=INFO
+    volumes:
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # TODO: socket-proxy (ver docs/DECISIONS.md)
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`traefik.lab.${DOMAIN}`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls.certresolver=cf
+      - traefik.http.routers.dashboard.tls.domains[0].main=lab.${DOMAIN}
+      - traefik.http.routers.dashboard.tls.domains[0].sans=*.lab.${DOMAIN}
+      - traefik.http.routers.dashboard.service=api@internal
+
+networks:
+  proxy:
+    external: true

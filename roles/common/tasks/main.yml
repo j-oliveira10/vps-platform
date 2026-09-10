@@ -1,0 +1,21 @@
+---
+- name: Instalar pacotes base
+  ansible.builtin.apt:
+    name:
+      - ufw
+      - fail2ban
+      - unattended-upgrades
+      - curl
+      - git
+      - jq
+    state: present
+    update_cache: true
+
+- name: Garantir usuario administrativo
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    groups: sudo
+    append: true
+    shell: /bin/bash
+
+# TODO: hardening SSH, ufw, fail2ban — fim de semana 4
