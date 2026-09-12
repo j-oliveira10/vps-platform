@@ -30,3 +30,5 @@ restic-password
 Thumbs.db
 .vscode/
 .idea/
+
+docker-compose.override.yml
