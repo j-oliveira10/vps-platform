@@ -31,6 +31,28 @@ granular. Restic para B2 é offsite, deduplicado, cifrado no cliente e
 restaurável para diretório arbitrário — o que torna o teste de restore parte
 da rotina em vez de um evento.
 
+## Resize para 2 GB após medir pressão de memória
+O droplet inicial de 1 GB comportou Traefik, aplicação e Postgres, mas a stack
+de observabilidade levou o sistema a 202 MB disponíveis com 330 MB já em swap
+ativo sob swappiness=10 — paginação por pressão real, não por hábito do kernel.
+Loki e Promtail adicionariam mais 150-200 MB, colocando o Postgres como
+candidato ao OOM killer. Resize para 2 GB com a opção "CPU and RAM only", que
+preserva o disco e permanece reversível.
+
+## Traefik fixado em 3.7
+A 3.3.7 é incompatível com Docker Engine 29.x: o provider Docker falha com
+"client version 1.24 is too old", nenhum router é montado, e o resultado é um
+certificado autoassinado sem nenhuma tentativa de ACME registrada nos logs — um
+modo de falha silencioso. O ambiente local, com engine mais antiga, não
+reproduzia o problema.
+
+## Comandos que derrubam serviço não vão encadeados
+Um `docker compose down && rm acme.json && docker compose up -d` parou no rm por
+falta de permissão, deixando o serviço fora do ar sem erro evidente. Passos que
+interrompem serviço são executados separadamente, com verificação entre eles.
+
+
+
 ## TODO
 - [ ] Substituir montagem direta de `/var/run/docker.sock` no Traefik por
       socket-proxy com escopo mínimo (`CONTAINERS=1`, restante 0).

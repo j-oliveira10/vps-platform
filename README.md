@@ -50,7 +50,7 @@ Procedimento testado e cronometrado em [RESTORE.md](RESTORE.md).
 
 ## Status
 
-- [ ] Fim de semana 1 — baseline manual (SSH, ufw, Docker, Traefik, app)
-- [ ] Fim de semana 2 — WireGuard, Restic, restore testado
-- [ ] Fim de semana 3 — Prometheus, Loki, Grafana, alertas
+- [x] Fim de semana 1 — baseline manual (SSH, ufw, Docker, Traefik, app)
+- [x] Fim de semana 2 — WireGuard, Restic, restore testado
+- [x] Fim de semana 3 — Prometheus, Loki, Grafana, alertas
 - [ ] Fim de semana 4 — tudo em Ansible, rebuild do zero, CI/CD

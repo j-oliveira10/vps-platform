@@ -6,7 +6,7 @@ services:
     networks: [proxy, monitoring]
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.retention.time=15d
+      - --storage.tsdb.retention.time=7d
       - --web.enable-lifecycle
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -15,7 +15,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.prometheus.rule=Host(`prometheus.lab.${DOMAIN}`)
-      - traefik.http.routers.prometheus.entrypoints=websecure
+      - traefik.http.routers.prometheus.entrypoints=wg
       - traefik.http.routers.prometheus.tls.certresolver=cf
       - traefik.http.services.prometheus.loadbalancer.server.port=9090
 
@@ -33,7 +33,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana.rule=Host(`grafana.lab.${DOMAIN}`)
-      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.entrypoints=wg
       - traefik.http.routers.grafana.tls.certresolver=cf
       - traefik.http.services.grafana.loadbalancer.server.port=3000
 
