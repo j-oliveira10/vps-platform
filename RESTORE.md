@@ -34,4 +34,4 @@ docker rm -f pg-verify
 ## 4. Registrar
 | Data | Tamanho | Duração | Resultado |
 |---|---|---|---|
-|  |  |  |  |
+|2026-09-12|49.273 KiB|0m1.613s|OK|
