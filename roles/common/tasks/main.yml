@@ -1,15 +1,92 @@
 ---
 - name: Instalar pacotes base
   ansible.builtin.apt:
-    name:
-      - ufw
-      - fail2ban
-      - unattended-upgrades
-      - curl
-      - git
-      - jq
+    name: [ufw, fail2ban, unattended-upgrades, curl, git, jq, restic, wireguard]
     state: present
     update_cache: true
+    cache_valid_time: 3600
+
+- name: Configurar swap
+  when: ansible_facts['swaptotal_mb'] < 1024 #  when: ansible_swaptotal_mb < 1024
+  block:
+    - name: Criar arquivo de swap
+      ansible.builtin.command: fallocate -l 2G /swapfile
+      args:
+        creates: /swapfile
+
+    - name: Permissao do swapfile
+      ansible.builtin.file:
+        path: /swapfile
+        mode: '0600'
+
+    - name: Formatar swap
+      ansible.builtin.command: mkswap /swapfile
+      register: mkswap_result
+      changed_when: "'Setting up swapspace' in mkswap_result.stdout"
+      failed_when: mkswap_result.rc != 0 and 'already' not in mkswap_result.stderr
+
+    - name: Habilitar swap no fstab
+      ansible.posix.mount:
+        path: none
+        src: /swapfile
+        fstype: swap
+        opts: sw
+        state: present
+
+- name: Ajustar swappiness
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: '10'
+    sysctl_file: /etc/sysctl.d/99-swap.conf
+    reload: true
+
+- name: Hardening do SSH
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/99-hardening.conf
+    mode: '0644'
+    content: |
+      Port {{ ssh_port }}
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      AllowUsers {{ admin_user }}
+  notify: restart sshd
+
+- name: Desabilitar socket activation do SSH
+  ansible.builtin.systemd:
+    name: ssh.socket
+    enabled: false
+    state: stopped
+  failed_when: false
+
+- name: Regras do ufw
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+  loop:
+    - { port: "2222", proto: tcp }
+    - { port: "80", proto: tcp }
+    - { port: "443", proto: tcp }
+    - { port: "51820", proto: udp }
+
+- name: Ativar ufw com default deny
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Configurar fail2ban
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.local
+    mode: '0644'
+    content: |
+      [sshd]
+      enabled = true
+      port = {{ ssh_port }}
+      maxretry = 5
+      bantime = 1h
+  notify: restart fail2ban
 
 - name: Garantir usuario administrativo
   ansible.builtin.user:
