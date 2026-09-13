@@ -1,3 +1,67 @@
 ---
 # role: docker
 # TODO: implementar no fim de semana 4, depois de validar tudo manualmente.
+
+- name: Criar /etc/docker
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Configurar daemon.json antes da instalacao
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+    content: "{{ docker_daemon_config | to_nice_json }}"
+  notify: restart docker
+  vars:
+    docker_daemon_config:
+      default-address-pools:
+        - base: "{{ docker_address_pool_base }}"
+          size: "{{ docker_address_pool_size | int }}"
+      log-driver: json-file
+      log-opts:
+        max-size: 10m
+        max-file: "3"
+
+- name: Chave GPG do repositorio Docker
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+
+- name: Repositorio Docker
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable
+    filename: docker
+    state: present
+
+- name: Instalar Docker
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+
+- name: Docker habilitado no boot
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Usuario no grupo docker
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    groups: docker
+    append: true
+
+- name: Rede proxy
+  community.docker.docker_network:
+    name: proxy
+    state: present
