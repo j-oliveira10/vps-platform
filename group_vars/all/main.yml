@@ -34,3 +34,9 @@ restic_repo: "b2:vps-platform-backup:/"
 restic_keep_daily: 7
 restic_keep_weekly: 4
 restic_keep_monthly: 6
+
+# Peers do WireGuard — chave publica pertence ao cliente, nao ao servidor
+wg_peers:
+  - name: notebook-jairo
+    public_key: "DdXHly4j4fmi0S65O00Azey3g+FI992nVI3S22wf6z0="
+    allowed_ips: 10.100.0.2/32
