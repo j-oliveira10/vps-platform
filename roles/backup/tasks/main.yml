@@ -1,3 +1,80 @@
 ---
 # role: backup
 # TODO: implementar no fim de semana 4, depois de validar tudo manualmente.
+
+- name: Senha do repositorio restic
+  ansible.builtin.copy:
+    dest: /root/.restic-password
+    content: "{{ vault_restic_password }}"
+    owner: root
+    mode: '0600'
+  no_log: true
+
+- name: Ambiente do restic
+  ansible.builtin.copy:
+    dest: /root/.restic-env
+    owner: root
+    mode: '0600'
+    content: |
+      export B2_ACCOUNT_ID="{{ vault_b2_account_id }}"
+      export B2_ACCOUNT_KEY="{{ vault_b2_account_key }}"
+      export RESTIC_REPOSITORY="{{ restic_repo }}"
+      export RESTIC_PASSWORD_FILE="/root/.restic-password"
+  no_log: true
+
+- name: Script de backup
+  ansible.builtin.copy:
+    dest: /usr/local/bin/backup.sh
+    owner: root
+    mode: '0700'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      source /root/.restic-env
+
+      mkdir -p /var/backups/pg
+      docker exec db pg_dumpall -U appuser > /var/backups/pg/dump.sql
+
+      restic backup /var/backups/pg {{ stack_dir }}
+      restic forget \
+        --keep-daily {{ restic_keep_daily }} \
+        --keep-weekly {{ restic_keep_weekly }} \
+        --keep-monthly {{ restic_keep_monthly }} \
+        --prune
+
+- name: Unit do backup
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/backup.service
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Backup diario via restic
+      After=docker.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/backup.sh
+
+- name: Timer do backup
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/backup.timer
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Dispara backup diario
+
+      [Timer]
+      OnCalendar=*-*-* 03:00:00
+      RandomizedDelaySec=900
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+  notify: recarregar systemd
+
+- name: Habilitar o timer
+  ansible.builtin.systemd:
+    name: backup.timer
+    enabled: true
+    state: started
+    daemon_reload: true
