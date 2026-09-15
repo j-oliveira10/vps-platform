@@ -7,6 +7,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "10.100.0.1:8443:8443"
       # dashboard NAO exposto publicamente — via router interno na wg0
     environment:
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN:?token obrigatorio}
@@ -16,15 +17,15 @@ services:
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=proxy
       - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entrypoint.to=wg    # websecure
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.websecure.address=:443
+      - --entrypoints.wg.address=:8443
       - --certificatesresolvers.cf.acme.dnschallenge=true
       - --certificatesresolvers.cf.acme.dnschallenge.provider=cloudflare
       - --certificatesresolvers.cf.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
       - --certificatesresolvers.cf.acme.email=${ACME_EMAIL:?email obrigatorio}
       - --certificatesresolvers.cf.acme.storage=/letsencrypt/acme.json
-      # REMOVER a linha abaixo (e apagar acme.json) ao migrar para producao
       - --accesslog=true
       - --accesslog.format=json
       - --log.level=INFO
@@ -34,7 +35,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.dashboard.rule=Host(`traefik.lab.${DOMAIN}`)
-      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.entrypoints=wg
       - traefik.http.routers.dashboard.tls.certresolver=cf
       - traefik.http.routers.dashboard.tls.domains[0].main=lab.${DOMAIN}
       - traefik.http.routers.dashboard.tls.domains[0].sans=*.lab.${DOMAIN}

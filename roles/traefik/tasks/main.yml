@@ -1,3 +1,33 @@
 ---
-# role: traefik
-# TODO: implementar no fim de semana 4, depois de validar tudo manualmente.
+- name: Diretorio do traefik
+  ansible.builtin.file:
+    path: "{{ stack_dir }}/traefik"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: '0755'
+
+- name: Compose do traefik
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ stack_dir }}/traefik/docker-compose.yml"
+    owner: "{{ admin_user }}"
+    mode: '0644'
+  notify: recriar traefik
+
+- name: Env do traefik
+  ansible.builtin.copy:
+    dest: "{{ stack_dir }}/traefik/.env"
+    owner: "{{ admin_user }}"
+    mode: '0600'
+    content: |
+      CF_DNS_API_TOKEN={{ vault_cf_dns_api_token }}
+      ACME_EMAIL={{ acme_email }}
+      DOMAIN={{ domain }}
+  no_log: true
+  notify: recriar traefik
+
+- name: Subir stack do traefik
+  community.docker.docker_compose_v2:
+    project_src: "{{ stack_dir }}/traefik"
+    state: present

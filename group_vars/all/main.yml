@@ -2,7 +2,8 @@
 # Variáveis não sensíveis. Segredos ficam em vault.yml (ansible-vault).
 domain: jairooferreira.online
 lab_domain: "lab.{{ domain }}"
-acme_email: "voce@{{ domain }}"
+#acme_email: "voce@{{ domain }}"
+acme_email: "j.oliveira2026@outlook.com.br"
 
 # Fase de emissão de certificado: staging até validar, depois production
 acme_ca: staging   # staging | production
@@ -40,3 +41,5 @@ wg_peers:
   - name: notebook-jairo
     public_key: "DdXHly4j4fmi0S65O00Azey3g+FI992nVI3S22wf6z0="
     allowed_ips: 10.100.0.2/32
+
+stack_dir: "/home/{{ admin_user }}/stacks"

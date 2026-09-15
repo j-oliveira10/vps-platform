@@ -1,0 +1,6 @@
+---
+- name: recriar traefik
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ admin_user }}/vps-platform/compose/traefik"
+    state: restarted
+  become_user: "{{ admin_user }}"
