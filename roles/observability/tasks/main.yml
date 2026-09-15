@@ -1,3 +1,40 @@
 ---
 # role: observability
 # TODO: implementar no fim de semana 4, depois de validar tudo manualmente.
+
+- name: Diretorio da observabilidade
+  ansible.builtin.file:
+    path: "{{ stack_dir }}/observability"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: '0755'
+
+- name: Arquivos de configuracao
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ stack_dir }}/observability/{{ item }}"
+    owner: "{{ admin_user }}"
+    mode: '0644'
+  loop:
+    - docker-compose.yml
+    - prometheus.yml
+    - alerts.yml
+    - promtail.yml
+  notify: recriar observability
+
+- name: Env da observabilidade
+  ansible.builtin.copy:
+    dest: "{{ stack_dir }}/observability/.env"
+    owner: "{{ admin_user }}"
+    mode: '0600'
+    content: |
+      DOMAIN={{ domain }}
+      GRAFANA_ADMIN_PASSWORD={{ vault_grafana_admin_password }}
+  no_log: true
+  notify: recriar observability
+
+- name: Subir stack da observabilidade
+  community.docker.docker_compose_v2:
+    project_src: "{{ stack_dir }}/observability"
+    state: present

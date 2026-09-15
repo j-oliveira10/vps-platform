@@ -1,3 +1,37 @@
 ---
 # role: app
 # TODO: implementar no fim de semana 4, depois de validar tudo manualmente.
+
+- name: Diretorio da app
+  ansible.builtin.file:
+    path: "{{ stack_dir }}/app"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: '0755'
+
+- name: Compose da app
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ stack_dir }}/app/docker-compose.yml"
+    owner: "{{ admin_user }}"
+    mode: '0644'
+  notify: recriar app
+
+- name: Env da app
+  ansible.builtin.copy:
+    dest: "{{ stack_dir }}/app/.env"
+    owner: "{{ admin_user }}"
+    mode: '0600'
+    content: |
+      DOMAIN={{ domain }}
+      POSTGRES_USER=appuser
+      POSTGRES_PASSWORD={{ vault_postgres_password }}
+      POSTGRES_DB=appdb
+  no_log: true
+  notify: recriar app
+
+- name: Subir stack da app
+  community.docker.docker_compose_v2:
+    project_src: "{{ stack_dir }}/app"
+    state: present
