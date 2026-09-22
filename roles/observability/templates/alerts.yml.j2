@@ -27,4 +27,22 @@ groups:
           severity: critical
         annotations:
           summary: "Container api ausente ha 2 minutos"
+
+  - name: backup
+    rules:
+      - alert: BackupAtrasado
+        expr: time() - backup_last_success_timestamp > 90000
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nenhum backup bem-sucedido ha mais de 25 horas"
+
+      - alert: BackupMetricaAusente
+        expr: absent(backup_last_success_timestamp)
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Metrica de backup ausente — script nunca concluiu ou textfile quebrado"
 {% endraw %}

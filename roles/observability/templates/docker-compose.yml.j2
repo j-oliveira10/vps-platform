@@ -64,9 +64,11 @@ services:
     networks: [monitoring]
     command:
       - --path.rootfs=/host
+      - --collector.textfile.directory=/textfile
     pid: host
     volumes:
       - /:/host:ro,rslave
+      - /var/lib/node_exporter/textfile:/textfile:ro
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest

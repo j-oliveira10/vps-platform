@@ -1,6 +1,15 @@
 ---
 # role: backup
 # TODO: implementar no fim de semana 4, depois de validar tudo manualmente.
+- name: Diretorios de cache e metrica
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    mode: '0755'
+  loop:
+    - /var/cache/restic
+    - /var/lib/node_exporter/textfile
 
 - name: Senha do repositorio restic
   ansible.builtin.copy:
@@ -20,6 +29,7 @@
       export B2_ACCOUNT_KEY="{{ vault_b2_account_key }}"
       export RESTIC_REPOSITORY="{{ restic_repo }}"
       export RESTIC_PASSWORD_FILE="/root/.restic-password"
+      export RESTIC_CACHE_DIR="/var/cache/restic"
   no_log: true
 
 - name: Script de backup
@@ -41,6 +51,10 @@
         --keep-weekly {{ restic_keep_weekly }} \
         --keep-monthly {{ restic_keep_monthly }} \
         --prune
+      tmp=$(mktemp /var/lib/node_exporter/textfile/.backup.XXXXXX)
+      echo "backup_last_success_timestamp $(date +%s)" > "$tmp"
+      chmod 644 "$tmp"
+      mv "$tmp" /var/lib/node_exporter/textfile/backup.prom
 
 - name: Unit do backup
   ansible.builtin.copy:
