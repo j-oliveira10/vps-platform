@@ -27,7 +27,7 @@
     - prometheus.yml
     - alerts.yml
     - promtail.yml
-  notify: recriar observability
+  notify: Recriar observability
 
 - name: Env da observabilidade
   ansible.builtin.copy:
@@ -38,7 +38,7 @@
       DOMAIN={{ domain }}
       GRAFANA_ADMIN_PASSWORD={{ vault_grafana_admin_password }}
   no_log: true
-  notify: recriar observability
+  notify: Recriar observability
 
 - name: Subir stack da observabilidade
   community.docker.docker_compose_v2:

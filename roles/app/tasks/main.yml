@@ -16,7 +16,7 @@
     dest: "{{ stack_dir }}/app/docker-compose.yml"
     owner: "{{ admin_user }}"
     mode: '0644'
-  notify: recriar app
+  notify: Recriar app
 
 - name: Env da app
   ansible.builtin.copy:
@@ -29,7 +29,7 @@
       POSTGRES_PASSWORD={{ vault_postgres_password }}
       POSTGRES_DB=appdb
   no_log: true
-  notify: recriar app
+  notify: Recriar app
 
 - name: Subir stack da app
   community.docker.docker_compose_v2:

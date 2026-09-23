@@ -7,7 +7,7 @@
     cache_valid_time: 3600
 
 - name: Configurar swap
-  when: ansible_facts['swaptotal_mb'] < 1024 #  when: ansible_swaptotal_mb < 1024
+  when: ansible_facts['swaptotal_mb'] < 1024
   block:
     - name: Criar arquivo de swap
       ansible.builtin.command: fallocate -l 2G /swapfile
@@ -21,9 +21,9 @@
 
     - name: Formatar swap
       ansible.builtin.command: mkswap /swapfile
-      register: mkswap_result
-      changed_when: "'Setting up swapspace' in mkswap_result.stdout"
-      failed_when: mkswap_result.rc != 0 and 'already' not in mkswap_result.stderr
+      register: common_mkswap_result
+      changed_when: "'Setting up swapspace' in common_mkswap_result.stdout"
+      failed_when: common_mkswap_result.rc != 0 and 'already' not in common_mkswap_result.stderr
 
     - name: Habilitar swap no fstab
       ansible.posix.mount:
@@ -50,7 +50,7 @@
       PasswordAuthentication no
       KbdInteractiveAuthentication no
       AllowUsers {{ admin_user }}
-  notify: restart sshd
+  notify: Restart sshd
 
 - name: Desabilitar socket activation do SSH
   ansible.builtin.systemd:
@@ -86,7 +86,7 @@
       port = {{ ssh_port }}
       maxretry = 5
       bantime = 1h
-  notify: restart fail2ban
+  notify: Restart fail2ban
 
 - name: Garantir usuario administrativo
   ansible.builtin.user:

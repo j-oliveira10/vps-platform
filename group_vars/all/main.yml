@@ -2,7 +2,7 @@
 # Variáveis não sensíveis. Segredos ficam em vault.yml (ansible-vault).
 domain: jairooferreira.online
 lab_domain: "lab.{{ domain }}"
-#acme_email: "voce@{{ domain }}"
+# acme_email: "voce@{{ domain }}"
 acme_email: "j.oliveira2026@outlook.com.br"
 
 # Fase de emissão de certificado: staging até validar, depois production
@@ -23,8 +23,8 @@ wg_network: "10.100.0.0/24"
 
 # Serviços privados (só alcançáveis via wg0)
 private_services:
-  - { name: traefik,    host: "traefik.{{ lab_domain }}",    port: 8080 }
-  - { name: grafana,    host: "grafana.{{ lab_domain }}",    port: 3000 }
+  - { name: traefik, host: "traefik.{{ lab_domain }}", port: 8080 }
+  - { name: grafana, host: "grafana.{{ lab_domain }}", port: 3000 }
   - { name: prometheus, host: "prometheus.{{ lab_domain }}", port: 9090 }
 
 # App pública

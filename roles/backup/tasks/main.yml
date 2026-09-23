@@ -84,7 +84,7 @@
 
       [Install]
       WantedBy=timers.target
-  notify: recarregar systemd
+  notify: Recarregar systemd
 
 - name: Habilitar o timer
   ansible.builtin.systemd:

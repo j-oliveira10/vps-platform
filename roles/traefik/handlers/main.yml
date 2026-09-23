@@ -1,6 +1,7 @@
 ---
-- name: recriar traefik
+- name: Recriar traefik
   community.docker.docker_compose_v2:
-    project_src: "/home/{{ admin_user }}/vps-platform/compose/traefik"
+    project_src: "{{ stack_dir }}/traefik"
     state: restarted
+  become: true
   become_user: "{{ admin_user }}"

@@ -26,7 +26,7 @@
 - name: Ler chave privada do servidor
   ansible.builtin.slurp:
     src: /etc/wireguard/server.key
-  register: wg_server_key
+  register: wireguard_wg_server_key
   no_log: true
 
 - name: Configurar wg0
@@ -37,7 +37,7 @@
       [Interface]
       Address = {{ wg_server_address }}
       ListenPort = {{ wg_port }}
-      PrivateKey = {{ wg_server_key.content | b64decode | trim }}
+      PrivateKey = {{ wireguard_wg_server_key.content | b64decode | trim }}
       {% for peer in wg_peers %}
 
       [Peer]
@@ -45,7 +45,7 @@
       PublicKey = {{ peer.public_key }}
       AllowedIPs = {{ peer.allowed_ips }}
       {% endfor %}
-  notify: restart wireguard
+  notify: Restart wireguard
   no_log: true
 
 - name: Habilitar wg-quick

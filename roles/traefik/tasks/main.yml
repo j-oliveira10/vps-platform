@@ -13,7 +13,7 @@
     dest: "{{ stack_dir }}/traefik/docker-compose.yml"
     owner: "{{ admin_user }}"
     mode: '0644'
-  notify: recriar traefik
+  notify: Recriar traefik
 
 - name: Env do traefik
   ansible.builtin.copy:
@@ -25,7 +25,7 @@
       ACME_EMAIL={{ acme_email }}
       DOMAIN={{ domain }}
   no_log: true
-  notify: recriar traefik
+  notify: Recriar traefik
 
 - name: Subir stack do traefik
   community.docker.docker_compose_v2:

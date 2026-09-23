@@ -13,7 +13,7 @@
     dest: /etc/docker/daemon.json
     mode: '0644'
     content: "{{ docker_daemon_config | to_nice_json }}"
-  notify: restart docker
+  notify: Restart docker
   vars:
     docker_daemon_config:
       default-address-pools:

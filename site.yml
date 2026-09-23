@@ -1,5 +1,5 @@
 ---
-- name: vps-platform — provisionamento completo
+- name: VPS-platform — provisionamento completo
   hosts: vps
   become: true
   roles:
