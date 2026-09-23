@@ -22,18 +22,22 @@ jobs:
       - name: Instalar collections
         run: ansible-galaxy install -r requirements.yml
 
-      - name: Configurar chave SSH
+      - name: Configurar chave SSH e known_hosts
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/vps_ci
+          chmod 600 ~/.ssh/vps_ci
           printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Rodar playbook
         env:
           ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          ANSIBLE_HOST_KEY_CHECKING: "True"
         run: |
           printf '%s' "$ANSIBLE_VAULT_PASSWORD" > .vault_pass
           chmod 600 .vault_pass
-          ansible-playbook site.yml --vault-password-file .vault_pass
+          ansible-playbook site.yml \
+            --vault-password-file .vault_pass \
+            --private-key ~/.ssh/vps_ci
           rm -f .vault_pass
