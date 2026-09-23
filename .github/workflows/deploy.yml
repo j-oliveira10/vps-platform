@@ -39,5 +39,5 @@ jobs:
           chmod 600 .vault_pass
           ansible-playbook site.yml \
             --vault-password-file .vault_pass \
-            --private-key ~/.ssh/vps_ci
+            -e ansible_ssh_private_key_file=~/.ssh/vps_ci
           rm -f .vault_pass
